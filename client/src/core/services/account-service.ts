@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service, signal } from '@angular/core';
-import type { RegisterCreds, LoginCreds } from '../types/user';
+import type { RegisterCreds, LoginCreds } from '../../types/user';
 import { tap } from 'rxjs/operators';
-import { User } from '../types/user';
+import { User } from '../../types/user';
 
 @Service()
 export class AccountService {
