@@ -1,23 +1,78 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import type { Member } from '../../../types/member';
+import {
+  Component,
+  inject,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  HostListener,
+} from '@angular/core';
+import { ToastService } from '../../../core/services/toast-service';
+import { FormsModule, type NgForm } from '@angular/forms';
+import { MemberService } from '../../../core/services/member-service';
+import type { EditableMember, Member } from '../../../types/member';
 import { DatePipe } from '@angular/common';
+import { AccountService } from '../../../core/services/account-service';
 
 @Component({
-  imports: [DatePipe],
+  imports: [DatePipe, FormsModule],
   selector: 'app-member-profile',
   styleUrl: './member-profile.css',
   templateUrl: './member-profile.html',
 })
-export class MemberProfile implements OnInit {
-  private route = inject(ActivatedRoute);
-  protected member = signal<Member | undefined>(undefined);
+export class MemberProfile implements OnInit, OnDestroy {
+  @ViewChild('editForm') editForm?: NgForm;
+  @HostListener('window:beforeunload', ['$event']) notify($event: BeforeUnloadEvent) {
+    if (this.editForm?.dirty) {
+      $event.preventDefault();
+    }
+  }
+  protected memberService = inject(MemberService);
+  private accountService = inject(AccountService);
+  private toast = inject(ToastService);
+  protected editableMember: EditableMember = {
+    displayName: '',
+    description: '',
+    city: '',
+    country: '',
+  };
 
   ngOnInit(): void {
-    this.route.parent?.data.subscribe({
-      next: (data) => {
-        this.member.set(data['member']);
+    this.editableMember = {
+      displayName: this.memberService.member()?.displayName || '',
+      description: this.memberService.member()?.description || '',
+      city: this.memberService.member()?.city || '',
+      country: this.memberService.member()?.country || '',
+    };
+  }
+
+  updateProfile(): void {
+    if (!this.memberService.member()) return;
+
+    const updatedMember = { ...this.memberService.member(), ...this.editableMember };
+    this.memberService.updateMember(this.editableMember).subscribe({
+      next: () => {
+        const currentUser = this.accountService.currentUser();
+        console.log('Current User:', currentUser);
+        console.log('Updated Member:', updatedMember);
+        if (currentUser && updatedMember.displayName !== currentUser.displayName) {
+          currentUser.displayName = updatedMember.displayName;
+          console.log('Display name changed to:', currentUser.displayName);
+          this.accountService.setCurrentUser(currentUser);
+        }
+        this.toast.success('Profile updated successfully');
+        this.memberService.editMode.set(false);
+        this.memberService.member.set(updatedMember as Member);
+        this.editForm?.reset(updatedMember);
+      },
+      error: (err) => {
+        this.toast.error('Failed to update profile');
       },
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.memberService.editMode()) {
+      this.memberService.editMode.set(false);
+    }
   }
 }
