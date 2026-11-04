@@ -39,6 +39,7 @@ public class Seed
                     Id = member.Id,
                     DisplayName = member.DisplayName,
                     DateOfBirth = member.DateOfBirth,
+                    ImageUrl = member.ImageUrl,
                     Created = member.Created,
                     LastActive = member.LastActive,
                     Gender = member.Gender,
