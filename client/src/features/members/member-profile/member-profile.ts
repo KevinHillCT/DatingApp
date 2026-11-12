@@ -6,6 +6,7 @@ import {
   ViewChild,
   HostListener,
 } from '@angular/core';
+import { TimeAgoPipe } from '../../../core/pipes/time-ago-pipe';
 import { ToastService } from '../../../core/services/toast-service';
 import { FormsModule, type NgForm } from '@angular/forms';
 import { MemberService } from '../../../core/services/member-service';
@@ -14,7 +15,7 @@ import { DatePipe } from '@angular/common';
 import { AccountService } from '../../../core/services/account-service';
 
 @Component({
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, TimeAgoPipe],
   selector: 'app-member-profile',
   styleUrl: './member-profile.css',
   templateUrl: './member-profile.html',

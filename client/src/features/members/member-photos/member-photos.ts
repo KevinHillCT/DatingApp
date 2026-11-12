@@ -81,4 +81,8 @@ export class MemberPhotos implements OnInit {
         }) as Member,
     );
   }
+
+  isValidPhoto (photo: Photo): boolean {
+    return true;
+  }
 }
