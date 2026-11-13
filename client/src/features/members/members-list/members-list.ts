@@ -26,6 +26,7 @@ export class MembersList implements OnInit {
     if (filters) {
       this.memberParams = {...JSON.parse(filters)};
       this.updatedParams = {...JSON.parse(filters)};
+      console.log('Loaded filters from localStorage members-lists:', this.memberParams);
     }
   }
 

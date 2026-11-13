@@ -32,4 +32,12 @@ export class MemberParams {
   pageNumber: number = 1;
   pageSize: number = 10;
   orderBy?: string = 'lastActive';
+  predicate?: string = 'liked';
+}
+
+export class LikesParams {
+  memberId: string = '';
+  predicate: string = 'liked';
+  pageNumber: number = 1;
+  pageSize: number = 10;
 }
