@@ -1,7 +1,6 @@
 import { Component, inject, signal, OnInit, ViewChild } from '@angular/core';
 import { FilterModal } from '../filter-modal/filter-modal';
 import { MemberParams } from '../../../types/member';
-import { AsyncPipe } from '@angular/common';
 import { MemberService } from '../../../core/services/member-service';
 import type { PaginatedResult } from '../../../types/pagination';
 import type { Member } from '../../../types/member';
@@ -10,7 +9,7 @@ import { Paginator } from '../../../shared/paginator/paginator';
 
 @Component({
   selector: 'app-members-list',
-  imports: [AsyncPipe, MemberCard, Paginator, FilterModal],
+  imports: [MemberCard, Paginator, FilterModal],
   styleUrl: './members-list.css',
   templateUrl: './members-list.html',
 })

@@ -1,8 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { AgePipe } from '../../../core/pipes/age-pipe';
-import { AsyncPipe } from '@angular/common';
 import { AccountService } from '../../../core/services/account-service';
-import type { Member } from '../../../types/member';
 import {
   ActivatedRoute,
   NavigationEnd,
@@ -15,7 +13,7 @@ import { MemberService } from '../../../core/services/member-service';
 import { filter } from 'rxjs';
 
 @Component({
-  imports: [AsyncPipe, RouterLink, RouterLinkActive, RouterOutlet, AgePipe],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, AgePipe],
   selector: 'app-member-detailed',
   styleUrl: './member-detailed.css',
   templateUrl: './member-detailed.html',

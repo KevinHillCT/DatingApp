@@ -11,11 +11,10 @@ import {
 } from '@angular/forms';
 import { RegisterCreds } from '../../../types/user';
 import { AccountService } from '../../../core/services/account-service';
-import { JsonPipe } from '@angular/common';
 import { TextInput } from '../../../shared/text-input/text-input';
 
 @Component({
-  imports: [ReactiveFormsModule, JsonPipe, TextInput],
+  imports: [ReactiveFormsModule, TextInput],
   selector: 'app-register',
   styleUrl: './register.css',
   templateUrl: './register.html',
