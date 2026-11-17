@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from '../core/guards/admin-guard';
 import { preventUnsavedChangesGuard } from '../core/guards/prevent-unsaved-changes-guard';
 import { memberResolver } from '../features/members/member-resolver';
 import { authGuard } from '../core/guards/auth-guard';
@@ -13,6 +14,7 @@ import { ServerError } from '../shared/errors/server-error/server-error';
 import { MemberProfile } from '../features/members/member-profile/member-profile';
 import { MemberPhotos } from '../features/members/member-photos/member-photos';
 import { MemberMessages } from '../features/members/member-messages/member-messages';
+import { Admin } from '../features/admin/admin';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -35,6 +37,7 @@ export const routes: Routes = [
       },
       { path: 'lists', component: Lists },
       { path: 'messages', component: Messages },
+      { path: 'admin', component: Admin, canActivate: [adminGuard] },
     ],
   },
   { path: 'errors', component: TestErrors },

@@ -14,6 +14,11 @@ public class LikesController(ILikesRepository likesRepository) : BaseApiControll
     {
         var sourceMemberId = User.GetMemberId();
 
+        if (string.IsNullOrEmpty(sourceMemberId))
+        {
+            return BadRequest("No source member ID found.");
+        }
+
         if (sourceMemberId == targetMemberId)
             return BadRequest("You cannot like yourself.");
 
@@ -40,7 +45,13 @@ public class LikesController(ILikesRepository likesRepository) : BaseApiControll
     [HttpGet("list")]
     public async Task<ActionResult<IEnumerable<MemberLike>>> GetCurrentMemberLikeIds()
     {
-        return Ok(await likesRepository.GetCurrentMemberLikeIds(User.GetMemberId()));
+        var sourceMemberId = User.GetMemberId();
+        if (string.IsNullOrEmpty(sourceMemberId))
+        {
+            return BadRequest("No source member ID found.");
+        }
+
+        return Ok(await likesRepository.GetCurrentMemberLikeIds(sourceMemberId));
     }
 
     [HttpGet]

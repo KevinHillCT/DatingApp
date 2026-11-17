@@ -4,6 +4,6 @@ namespace API.DTOs;
 
 public class CreateMessageDto
 {
-    public string RecipientId { get; set; }
-    public string Content { get; set; }
+    public required string RecipientId { get; set; }
+    public required string Content { get; set; }
 }

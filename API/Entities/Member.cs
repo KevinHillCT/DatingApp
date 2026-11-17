@@ -13,8 +13,8 @@ public class Member
     public DateTime LastActive { get; set; } = DateTime.UtcNow;
     public required string Gender { get; set; }
     public string? Description { get; set; }
-    public string City { get; set; }
-    public  string Country { get; set; }
+    public string? City { get; set; }
+    public  string? Country { get; set; }
 
     // Navigation property to the photos associated with this member
     [JsonIgnore]
