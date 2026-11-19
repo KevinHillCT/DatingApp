@@ -1,90 +1,95 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service, signal } from '@angular/core';
 import { LikesService } from './likes-service';
+import { PresenceService } from './presence-service';
 import type { RegisterCreds, LoginCreds } from '../../types/user';
 import { tap } from 'rxjs/operators';
 import { User } from '../../types/user';
 import { environment } from '../../environments/environment';
+import { HubConnectionState } from '@microsoft/signalr';
 
 @Service()
 export class AccountService {
-  private http = inject(HttpClient);
-  private likesService = inject(LikesService);
-  currentUser = signal<User | null>(null);
+    private http = inject(HttpClient);
+    private likesService = inject(LikesService);
+    private presenceService = inject(PresenceService);
+    currentUser = signal<User | null>(null);
 
-  private baseUrl = environment.apiUrl;
+    private baseUrl = environment.apiUrl;
 
-  register(creds: RegisterCreds) {
-    return this.http
-      .post<User>(`${this.baseUrl}account/register`, creds, { withCredentials: true })
-      .pipe(
-        tap((user) => {
-          if (user) {
-            this.setCurrentUser(user);
-            this.startTokenRefreshInterval();
-            this.likesService.clearLikeIds();
-          }
-        }),
-      );
-  }
+    register(creds: RegisterCreds) {
+        return this.http.post<User>(`${this.baseUrl}account/register`, creds, { withCredentials: true }).pipe(
+            tap(user => {
+                if (user) {
+                    this.setCurrentUser(user);
+                    this.startTokenRefreshInterval();
+                    this.likesService.clearLikeIds();
+                }
+            })
+        );
+    }
 
-  login(creds: LoginCreds) {
-    return this.http
-      .post<User>(`${this.baseUrl}account/login`, creds, { withCredentials: true })
-      .pipe(
-        tap((user) => {
-          if (user) {
-            this.setCurrentUser(user);
-            this.startTokenRefreshInterval();
-            this.likesService.getLikeIds();
-          }
-        }),
-      );
-  }
+    login(creds: LoginCreds) {
+        return this.http.post<User>(`${this.baseUrl}account/login`, creds, { withCredentials: true }).pipe(
+            tap(user => {
+                if (user) {
+                    this.setCurrentUser(user);
+                    this.startTokenRefreshInterval();
+                    this.likesService.getLikeIds();
+                }
+            })
+        );
+    }
 
-  refreshToken() {
-    return this.http.post<User>(
-      `${this.baseUrl}account/refresh-token`,
-      {},
-      { withCredentials: true },
-    );
-  }
+    refreshToken() {
+        return this.http.post<User>(`${this.baseUrl}account/refresh-token`, {}, { withCredentials: true });
+    }
 
-  startTokenRefreshInterval() {
-    setInterval(
-      () => {
-        this.http
-          .post<User>(`${this.baseUrl}account/refresh-token`, {}, { withCredentials: true })
-          .subscribe({
-            next: (user) => {
-              this.setCurrentUser(user);
+    startTokenRefreshInterval() {
+        setInterval(
+            () => {
+                this.http.post<User>(`${this.baseUrl}account/refresh-token`, {}, { withCredentials: true }).subscribe({
+                    next: user => {
+                        this.setCurrentUser(user);
+                    },
+                    error: () => {
+                        console.error('Failed to refresh token');
+                        this.logout();
+                    },
+                });
             },
-            error: () => {
-              console.error('Failed to refresh token');
-              this.logout();
+            5 * 60 * 1000
+        );
+    }
+
+    setCurrentUser(user: User) {
+        user.roles = this.getRolesFromToken(user);
+        this.currentUser.set(user);
+        this.likesService.getLikeIds();
+        if (this.presenceService.hubConnection?.state !== HubConnectionState.Connected) {
+            this.presenceService.createHubConnection(user);
+        }
+    }
+
+    logout() {
+        this.http.post(`${this.baseUrl}account/logout`, {}, { withCredentials: true }).subscribe({
+            next: () => {
+                this.currentUser.set(null);
+                localStorage.removeItem('filters');
+                this.likesService.clearLikeIds();
+                this.presenceService.stopHubConnection();
             },
-          });
-      },
-      5 * 60 * 1000,
-    );
-  }
+            error: err => {
+                console.error('Failed to log out', err);
+            },
+        });
+    }
 
-  setCurrentUser(user: User) {
-    user.roles = this.getRolesFromToken(user);
-    this.currentUser.set(user);
-    this.likesService.getLikeIds();
-  }
-
-  logout() {
-    this.currentUser.set(null);
-    localStorage.removeItem('filters');
-    this.likesService.clearLikeIds();
-  }
-
-  private getRolesFromToken(user: User): string[] {
-    const payload = user.token.split('.')[1];
-    const decoded = atob(payload);
-    const jsonPayload = JSON.parse(decoded);
-    return Array.isArray(jsonPayload.role) ? jsonPayload.role : [jsonPayload.role];
-  }
+    private getRolesFromToken(user: User): string[] {
+        const payload = user.token.split('.')[1];
+        const decoded = atob(payload);
+        const jsonPayload = JSON.parse(decoded);
+        return Array.isArray(jsonPayload.role) ? jsonPayload.role : [jsonPayload.role];
+    }
 }
+

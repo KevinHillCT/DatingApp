@@ -48,7 +48,7 @@
               <div class="h-12 w-12 rounded">
                 <img
                   class="rounded-full"
-                  src="{{ isInbox ? message.senderImageUrl : message.recipientImageUrl }}"
+                  src="{{ isInbox ? message.senderImageUrl || '/user.png' : message.recipientImageUrl || '/user.png' }}"
                   alt="Image of member"
                 />
               </div>
@@ -61,7 +61,7 @@
           <td class="w-2/9">{{ message.messageSent | date: 'medium' }}</td>
           <td class="w-1/9">
             <button
-              (click)="deleteMessage($event, message.id)"
+              (click)="confirmDelete($event, message.id)"
               class="btn btn-circle btn-ghost text-error"
             >
               <svg

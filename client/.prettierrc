@@ -1,12 +1,13 @@
 {
-  "printWidth": 100,
+  "printWidth": 120,
+  "semi": true,
+  "bracketSameLine": true,
+  "tabWidth": 4,
+  "useTabs": false,
   "singleQuote": true,
-  "overrides": [
-    {
-      "files": "*.html",
-      "options": {
-        "parser": "angular"
-      }
-    }
-  ]
+  "quoteProps": "consistent",
+  "trailingComma": "es5",
+  "bracketSpacing": true,
+  "arrowParens": "avoid",
+  "endOfLine": "crlf"
 }
