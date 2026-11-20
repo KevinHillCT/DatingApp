@@ -1,1 +1,23 @@
-<p>photo-management works!</p>
+<div class="flex flex-col">
+    @if (photos().length > 0) {
+    <div class="grid grid-cols-5 gap-6">
+        @for (photo of photos(); track photo.id) {
+        <div>
+        <div class="card cursor-pointer relative">
+            <img class="rounded-lg" [src]="photo.url" alt="Photo by {{ photo.memberDisplayName }}" />
+            <div class="flex justify-between">
+                <button (click)="approvePhoto(photo.id)" class="btn btn-success btn-sm absolute bottom-2 right-2 w-1/3">Approve</button>
+                <button (click)="rejectPhoto(photo.id)" class="btn btn-error btn-sm absolute bottom-2 left-2 w-1/3">Reject</button>
+            </div>
+            <div class="top-2 left-2 absolute">
+                <img class="rounded-full w-8 h-8" [src]="photo.memberImageUrl ?? '/user.png'" alt="{{ photo.memberDisplayName }}" />
+            </div>
+        </div>
+        </div>
+    }
+    </div>
+    } @else {
+    <p>No photos to approve.</p>
+    }
+</div>
+

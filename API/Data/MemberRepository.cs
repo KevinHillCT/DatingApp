@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using API.Helpers;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Data;
 
@@ -48,12 +50,19 @@ public class MemberRepository(AppDbContext context) : IMemberRepository
         context.Entry(member).State = EntityState.Modified;
     }
 
-    public async Task<IReadOnlyList<Photo>> GetPhotosForMemberAsync(string memberId)
+    public async Task<IReadOnlyList<Photo>> GetPhotosForMemberAsync(string currentMemberId, string memberId)
     {
-        return await context.Members
-        .Where(x => x.Id.ToString() == memberId)
-        .SelectMany(x => x.Photos)
-        .ToListAsync();
+        var query = context.Members.AsQueryable();
+        query = query.Where( x => x.Id.ToString() == memberId );
+
+        if (currentMemberId == memberId) { 
+            return await query.SelectMany(x => x.Photos).ToListAsync();
+        }
+        else {
+            return await query
+                .SelectMany(x => x.Photos.Where( p=> p.isApproved))
+                .ToListAsync();
+        }
     }
 
     public async Task<Member?> GetMemberForUpdates(string id)

@@ -1,13 +1,16 @@
 using System;
+using API.DTOs;
 using API.Entities;
+using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 namespace API.Controllers;
 
-public class AdminController(UserManager<AppUser> userManager) : BaseApiController
+public class AdminController(UserManager<AppUser> userManager, IUnitOfWork uow) : BaseApiController
 {
+
     [Authorize(Policy = "RequiredAdminRole")]
     [HttpGet("users-with-roles")]
     public async Task<ActionResult> GetUsersWithRoles()
@@ -55,9 +58,35 @@ public class AdminController(UserManager<AppUser> userManager) : BaseApiControll
 
     [Authorize(Policy = "ModeratePhotoRole")]
     [HttpGet("photos-to-moderate")]
-    public ActionResult GetPhotosForModeration()
+    public async Task<ActionResult<IReadOnlyList<PhotoForApprovalDto>>> GetPhotosForModeration()
     {
-        return Ok("Only admins can see this");
+        return Ok(await uow.PhotoRepository.GetUnapprovedPhotos());
     }
 
+    [Authorize(Policy = "ModeratePhotoRole")]
+    [HttpPost("approve-photo/{photoId}")]
+    public async Task<ActionResult> ApprovePhoto(int photoId)
+    {
+        var photo = await uow.PhotoRepository.GetPhotoById(photoId);
+        if (photo == null) return NotFound("Photo not found");
+        photo.isApproved = true;
+        var member = await uow.MemberRepository.GetMemberByIdAsync(photo.MemberId);
+        if (member != null && member.ImageUrl == null)
+        {
+            member.ImageUrl = photo.Url;
+        }
+        await uow.Complete();
+        return Ok();
+    }
+
+    [Authorize(Policy = "ModeratePhotoRole")]
+    [HttpPost("reject-photo/{photoId}")]
+    public async Task<ActionResult> RejectPhoto(int photoId)
+    {
+        var photo = await uow.PhotoRepository.GetPhotoById(photoId);
+        if (photo == null) return NotFound("Photo not found");
+        await uow.PhotoRepository.RemovePhoto(photo);
+        await uow.Complete();
+        return Ok();
+    }
 }

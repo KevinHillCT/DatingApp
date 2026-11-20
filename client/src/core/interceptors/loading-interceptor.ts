@@ -38,6 +38,10 @@ export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
     cache.clear();
   }
 
+  if (req.method.includes('POST') && ( req.url.includes('/approve-photo') || req.url.includes('/reject-photo'))) {
+    invalidateCache('/photos-to-moderate');
+  }
+
   if (req.method === 'GET') {
     const cachedResponse = cache.get(cacheKey);
     if (cachedResponse) {
